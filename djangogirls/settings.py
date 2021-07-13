@@ -1,4 +1,5 @@
 import os
+import sys
 import dj_database_url
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -21,7 +22,6 @@ SITE_ID = 1
 # Application definition
 
 INSTALLED_APPS = (
-    'suit',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -120,60 +120,6 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
 AUTH_USER_MODEL = 'core.User'
 
-SUIT_CONFIG = {
-    'ADMIN_NAME': 'Django Girls',
-    'SEARCH_URL': '/admin/core/event/',
-    'MENU': (
-        {'label': 'Organize Applications',
-         'icon': 'icon-envelope',
-         'models': (
-             'organize.eventapplication',),
-         'permissions': 'organize.can_accept_organize_application'},
-        {'label': 'Users & Groups',
-         'icon': 'icon-user',
-         'models': ('core.user', 'auth.group'),
-         'permissions': ('auth.add_user', 'auth.add_group')},
-        {'label': 'Events',
-         'icon': 'icon-star',
-         'models': (
-             'core.event', 'core.eventpagecontent',
-             'core.eventpagemenu')},
-        {'label': 'Organizers',
-         'icon': 'icon-eye-open',
-         'models': (
-            {'url': '/admin/core/event/add_organizers/',
-             'label': 'Add organizers'},
-            {'url': '/admin/core/event/manage_organizers/',
-             'label': 'Remove organizers'})},
-        {'label': 'Application Form',
-         'app': 'applications',
-         'icon': 'icon-tasks'},
-        {'label': 'Submitted Applications',
-         'url': '/admin/applications/form/submissions/',
-         'icon': 'icon-user'},
-        {'app': 'flatpages', 'icon': 'icon-file'},
-        {'label': 'Blog & Django Stories',
-         'icon': 'icon-comment',
-         'models': ('story.Story',),
-         'permissions': ('story.add_story',)},
-        {'app': 'patreonmanager',
-         'icon': 'icon-gift',
-         'models': ('patron', 'payment', 'reward')},
-        {'label': 'Organizer\'s Manual',
-         'icon': 'icon-bookmark',
-         'url': 'https://organize.djangogirls.org/'},
-        {'label': 'Organizer\'s FAQ',
-         'icon': 'icon-bookmark',
-         'url': 'https://faq-organizers.djangogirls.org/'},
-        {'label': 'Organizer\'s Google Group',
-         'icon': 'icon-bookmark',
-         'url': 'https://groups.google.com/forum/#!forum/django-girls-organizers'},
-        {'label': 'Organizer\'s Slack',
-         'icon': 'icon-bookmark',
-         'url': 'https://djangogirls.slack.com/'},
-    )
-}
-
 THUMBNAIL_PRESERVE_EXTENSIONS = True
 THUMBNAIL_ALIASES = {
     '': {
@@ -191,6 +137,9 @@ LOGIN_URL = 'admin:login'
 
 if 'GITHUB_ACTIONS' in os.environ:
     STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static/source')]
+    RECAPTCHA_PUBLIC_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
+    RECAPTCHA_PRIVATE_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
+    SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
 elif DEBUG:
     STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static/local')]
 else:
@@ -218,8 +167,12 @@ DEFAULT_FROM_EMAIL = "hello@djangogirls.org"
 
 SLACK_API_KEY = os.environ.get('SLACK_API_KEY')
 
-RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', '')
-RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY', '')
+if 'test' in sys.argv:
+    SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
+else:
+    RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY', '')
+    RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY', '')
+
 # Using new No Captcha reCaptcha with SSL
 NOCAPTCHA = True
 
@@ -271,3 +224,5 @@ CODEMIRROR_PATH = "vendor/codemirror/"
 GAPPS_ADMIN_SDK_SCOPES = 'https://www.googleapis.com/auth/admin.directory.user'
 GAPPS_PRIVATE_KEY_ID = os.environ.get('GAPPS_PRIVATE_KEY_ID', '')
 GAPPS_PRIVATE_KEY = os.environ.get('GAPPS_PRIVATE_KEY', '')
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
